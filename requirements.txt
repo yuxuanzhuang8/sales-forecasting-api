@@ -3,14 +3,3 @@ uvicorn
 xgboost
 numpy
 pydantic
-```
-
-**Your folder structure to push:**
-```
-11_machine_learning_application_p2/
-├── app.py
-├── requirements.txt
-├── model/
-│   └── model.json
-└── frontend/
-    └── index.html
