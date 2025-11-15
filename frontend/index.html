@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Forecasting</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #e8f5e9;
+            border-radius: 5px;
+            display: none;
+        }
+        .result h2 {
+            color: #2e7d32;
+            margin-top: 0;
+        }
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Sales Forecasting</h1>
+        <p style="text-align: center; color: #666;">Enter sales from the last 6 months</p>
+        
+        <form id="salesForm">
+            <div class="input-group">
+                <label for="lag1">Last Month Sales (Lag 1):</label>
+                <input type="number" id="lag1" required placeholder="e.g., 14587">
+            </div>
+            
+            <div class="input-group">
+                <label for="lag2">2 Months Ago (Lag 2):</label>
+                <input type="number" id="lag2" required placeholder="e.g., 14395">
+            </div>
+            
+            <div class="input-group">
+                <label for="lag3">3 Months Ago (Lag 3):</label>
+                <input type="number" id="lag3" required placeholder="e.g., 12026">
+            </div>
+            
+            <div class="input-group">
+                <label for="lag4">4 Months Ago (Lag 4):</label>
+                <input type="number" id="lag4" required placeholder="e.g., 8728">
+            </div>
+            
+            <div class="input-group">
+                <label for="lag5">5 Months Ago (Lag 5):</label>
+                <input type="number" id="lag5" required placeholder="e.g., 6550">
+            </div>
+            
+            <div class="input-group">
+                <label for="lag6">6 Months Ago (Lag 6):</label>
+                <input type="number" id="lag6" required placeholder="e.g., 5000">
+            </div>
+            
+            <button type="submit">Predict Sales</button>
+        </form>
+        
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('salesForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Collect input values
+            const data = {
+                sales_lag_1: parseFloat(document.getElementById('lag1').value),
+                sales_lag_2: parseFloat(document.getElementById('lag2').value),
+                sales_lag_3: parseFloat(document.getElementById('lag3').value),
+                sales_lag_4: parseFloat(document.getElementById('lag4').value),
+                sales_lag_5: parseFloat(document.getElementById('lag5').value),
+                sales_lag_6: parseFloat(document.getElementById('lag6').value)
+            };
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<p>Predicting...</p>';
+            
+            try {
+                // Send POST request to FastAPI backend
+                const response = await fetch('http://127.0.0.1:8000/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Prediction failed');
+                }
+                
+                const result = await response.json();
+                
+                // Display result
+                resultDiv.className = 'result';
+                resultDiv.innerHTML = `
+                    <h2>Predicted Sales</h2>
+                    <p style="font-size: 24px; font-weight: bold; color: #2e7d32;">
+                        ${result.predicted_sales.toFixed(2)}
+                    </p>
+                `;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <h2>Error</h2>
+                    <p>${error.message}</p>
+                    <p>Make sure the FastAPI server is running on http://127.0.0.1:8000</p>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
